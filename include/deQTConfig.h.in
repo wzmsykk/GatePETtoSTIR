@@ -1,0 +1,6 @@
+#ifndef DEQTCONFIG_H_IN
+#define DEQTCONFIG_H_IN
+// the configured options and settings for deQT
+#define deQT_VERSION_MAJOR @deQT_VERSION_MAJOR@
+#define deQT_VERSION_MINOR @deQT_VERSION_MINOR@
+#endif // DEQTCONFIG_H_IN
