@@ -2,11 +2,11 @@
 
 rootGen::rootGen()
 {
-
+    Coincidences = new TChain("Coincidences");
 }
 rootGen::~rootGen()
 {
-
+    delete Coincidences;
 }
 int rootGen::stirTemplateGen()
 {
@@ -192,7 +192,7 @@ int rootGen::stirTemplateGen()
         out << "View offset (degrees)                    := "<<std::to_string(view_offset_degrees)<<std::endl;
         out << "Maximum number of non-arc-corrected bins := "<<std::to_string(number_of_bins)<<std::endl;
         out << "Default number of arc-corrected bins     := "<<arc_corrected_bins<<std::endl;
-        out << "Number of blocks per bucket in transaxial direction         := "<<std::to_string(blocks_per_bucket_in_tras)<<std::endl;
+//        out << "Number of blocks per bucket in transaxial direction         := "<<std::to_string(blocks_per_bucket_in_tras)<<std::endl;
         out << "Number of blocks per bucket in axial direction              := "<<std::to_string(blocks_per_bucket_in_axial)<<std::endl;
         out << "Number of crystals per block in axial direction             := "<<std::to_string(crystals_per_block_axial)<<std::endl;
         out << "Number of crystals per block in transaxial direction        := "<<std::to_string(crystals_per_block_trans)<<std::endl;
@@ -214,23 +214,37 @@ int rootGen::createEmptyMichelogram()
 {
     if (data_size=="float")
     {
-        float_michelogram = static_cast<float****> ( malloc (static_cast<float>(number_of_rings) * sizeof(float***)));
 
-        for (int16_t counter_rings_1 = 0; counter_rings_1< selected_ring_difference; counter_rings_1++)
+        int16_t m1,m2,m3,m4;
+        m1=m2=number_of_rings;
+        m3=static_cast<int16_t>(((detectors_per_ring/2) + 1.5));
+        m4=static_cast<int16_t>(tang_bins);
+        int16_t mm=static_cast<int16_t>(selected_ring_difference);
+        std::cout<<"Martix params"<<std::endl<<"d1:"<<m1<<" d2:"<<m2<<" d3:"<<m3<<" d4:"<<m4<<std::endl;
+        if(mm>m1) {std::cout <<"ERROR"; return 0;}
+        std::cout<<"malloc process"<<std::endl;
+        float process;
+        float_michelogram = static_cast<float****> ( malloc (static_cast<unsigned long>(m1) * sizeof(float***)));
+
+        for (int16_t counter_rings_1 = 0; counter_rings_1< mm; counter_rings_1++)
         {
-            float_michelogram[counter_rings_1] = static_cast<float***>( malloc ( static_cast<float>(number_of_rings) * sizeof(float**)));
+            process=static_cast<float>(counter_rings_1)/mm;
+             std::cout<<"finished %"<<process*100<<std::endl;
+            float_michelogram[counter_rings_1] = static_cast<float***>( malloc ( static_cast<unsigned long>(m2) * sizeof(float**)));
 
-            for (int16_t counter_rings_2 = 0; counter_rings_2< selected_ring_difference; counter_rings_2++)
+            for (int16_t counter_rings_2 = 0; counter_rings_2< mm; counter_rings_2++)
             {
-                float_michelogram[counter_rings_1][counter_rings_2] = static_cast<float**>( malloc (static_cast<float>(static_cast<int16_t>(((detectors_per_ring/2) + 1.5) * sizeof(float*)))));
 
-                for (int16_t counter_dets = 0; counter_dets < static_cast<int16_t>((detectors_per_ring/2) + 1.5); counter_dets++)
+                float_michelogram[counter_rings_1][counter_rings_2] = static_cast<float**>( malloc (static_cast<unsigned long>(m3) * sizeof(float*)));
+
+                for (int16_t counter_dets = 0; counter_dets < m3; counter_dets++)
                 {
-                    float_michelogram[counter_rings_1][counter_rings_2][counter_dets] =static_cast<float*>(malloc (static_cast<float>(tang_bins) * sizeof(float)));
+                    //std::cout<<counter_dets<<std::endl;
+                    float_michelogram[counter_rings_1][counter_rings_2][counter_dets] =static_cast<float*>(malloc (static_cast<unsigned long>(m4) * sizeof(float)));
                 }
             }
         }
-    std::cout<<"Martix params"<<std::endl<<"d1:"<<number_of_rings<<" d2:"<<number_of_rings<<" d3:"<<(((detectors_per_ring/2) + 1.5))<<" d4:"<<static_cast<float>(tang_bins)<<std::endl;
+        std::cout<<"Martix gen OK"<<std::endl;
 
     }
 
@@ -276,6 +290,7 @@ int rootGen::createEmptyMichelogram()
         }
 
     }
+
     return 1;
 }
 
@@ -283,11 +298,14 @@ int rootGen::createEmptyMichelogram()
 
 void rootGen::clearMichelogram()
 {
-
+    std::cout<<"clearing"<<std::endl;
+    float process;
     if (data_size=="float")
     {
         for (qint16 i = 0; i< selected_ring_difference;i++)
         {
+            process=static_cast<float>(i)/selected_ring_difference;
+            std::cout<<"cleared %"<<process*100<<std::endl;
             for(qint16 j=0; j< selected_ring_difference;j++)
             {
                 for(qint16 w=0; w< static_cast<qint16>((detectors_per_ring/2) + 1.5);w++)
@@ -341,6 +359,8 @@ void rootGen::clearMichelogram()
 
 void rootGen::createROOTMichelogram()
 {
+
+    //needed params detectors_per_ring crystals_xy
 #ifdef debug
   debugWork();
 #endif
@@ -373,11 +393,15 @@ void rootGen::createROOTMichelogram()
 
     for (unsigned long int i = 0; i < nentries; i++)
     {
-
+        if(i<10){
+            std::cout<<"ev1="<<eventID1<<" ev2="<<eventID2<<" comp1="<<comptonPhantom1<<std::endl;
+            std::cout<<"cid1="<<crystalID1<<" cid2="<<crystalID2<<" mID1="<<moduleID1<<std::endl;
+            std::cout<<"rid1="<<rsectorID1<<" rid2="<<rsectorID2<<" mID2="<<moduleID2<<std::endl;
+        }
 
         //pdialog.setValue(i/nentries);
         //pdialog.show();
-        Coincidences.GetEntry(i);
+        Coincidences->GetEntry(i);
 
         if (energy_1<low_energy || energy_1>hi_energy || energy_2<low_energy || energy_2>hi_energy)
             continue;
@@ -501,7 +525,10 @@ void rootGen::createROOTMichelogram()
         // Update the different arrays...
         //-------------------------------
         //***ALL EVENTS
-        float_michelogram[ring2][ring1][phi][u] += static_cast<float>(1.);
+        if(!load_test)//no out put now
+        {
+        float_michelogram[ring2][ring1][phi][u] += static_cast<float>(1.);}
+
         recorded_counts++;
 
         average_depth_of_interaction += globalPosX1;
@@ -515,12 +542,12 @@ void rootGen::createROOTMichelogram()
 void rootGen::saveMichelogram()
 {
     qint16 segment_number = 0 ;
-    qint16 ring1=100, ring2=100;
+    qint16 ring1=number_of_rings, ring2=number_of_rings;
     std::string output_data_name = output_template_name+".s";
-
+    std::remove(output_data_name.c_str());
     FILE *output_michelogram_file=std::fopen(output_data_name.c_str(),"wb");
 
-    if(output_michelogram_file!=NULL) std::cout<<"FileCreated"<<std::endl;
+    if(output_michelogram_file!=nullptr) std::cout<<"FileOpened"<<std::endl;
 
     //save_as_projections = ui->checkBox_4->isChecked();
 
@@ -530,9 +557,12 @@ void rootGen::saveMichelogram()
 
         if (data_size=="float")
         {
-
-            fwrite(float_michelogram,sizeof(float),(selected_ring_difference*selected_ring_difference*( detectors_per_ring/2)* tang_bins), output_michelogram_file);
-            std::cout<<"fwriteOK,Length="<<selected_ring_difference*selected_ring_difference*( detectors_per_ring/2)* tang_bins*sizeof(float)<<std::endl;
+            unsigned long size=selected_ring_difference*selected_ring_difference;
+            size*=( detectors_per_ring/2);
+            size*= tang_bins;
+            size*=sizeof(float);
+            fwrite(float_michelogram,sizeof(float),(size), output_michelogram_file);
+            std::cout<<"fwriteOK,Length="<<size<<std::endl;
         }
 
         else if (data_size=="integer")
@@ -628,7 +658,65 @@ void rootGen::saveMichelogram()
     fclose(output_michelogram_file);
 
 }
+void rootGen::processMacData(){
+    std::string vis_open="OGLSX";
+    float vis_viewer_set_viewpoint_Theta=60,vis_viewer_set_viewpoint_Phi=60;
+    float gate_world_geo_xLength=400;//cm
+    float gate_world_geo_yLength=400;//cm
+    float gate_world_geo_zLength=400;//cm
+    float gate_PET_geo_Rmax=52;//cm
+    float gate_PET_geo_Rmin=39.9f;//cm
+    float gate_PET_geo_Height=40.2f;//cm
+    float gate_head_geo_xLength=8;//cm
+    float gate_head_geo_yLength=32;//cm
+    float gate_head_geo_zLength=40;//cm
+    float gate_block_geo_xLength=30;//mm
+    float gate_block_geo_yLength=16;//mm
+    float gate_block_geo_zLength=20;//mm
+    float gate_crystal_geo_xLength=30;//mm
+    float gate_crystal_geo_yLength=3;//mm
+    float gate_crystal_geo_zLength=3.8f;//mm
+    float gate_LSO_geo_xLength=15;//mm
+    float gate_LSO_geo_yLength=3;//mm
+    float gate_LSO_geo_zLength=3.8f;//mm
+    float gate_BGO_geo_xLength=15;//mm
+    float gate_BGO_geo_yLength=3;//mm
+    float gate_BGO_geo_zLength=3.8f;//mm
+    int gate_crystal_array_x=1;
+    int gate_crystal_array_y=5;
+    int gate_crystal_array_z=5;
+    int gate_block_array_x=1;
+    int gate_block_array_y=20;
+    int gate_block_array_z=20;
+    int gate_ring_count=4;
+    //user defined params
+    //number_of_detector_per_ring =crystal_array.at(1) * block_array.at(1) * module_array.at(1) * rsector_array.at(0);
+    number_of_detector_per_ring=960;
+    maximum_ring_difference=100;
+    minimum_ring_difference=1;
+    blocks_xy=1;
+    blocks_z=1;
+    crystals_z=20;
+    crystals_xy=20;
+    modules_z=5;
+    modules_xy=1;
+    number_of_rings=100;
+    low_energy_u=450;
+    hi_energy_u=650;
+    //number_of_detector_per_ring=gate_crystal_array_x*gate_block_array_x;
 
+    //number_of_detector_per_ring =setRepeatNumberY *1*1*setRepeatNumber
+    //param process
+    detectors_per_ring=number_of_detector_per_ring;
+    number_of_bins=number_of_detector_per_ring/2;
+    tang_bins=number_of_bins;
+
+    selected_ring_difference=maximum_ring_difference - minimum_ring_difference +1 ;
+    max_ring_diff =number_of_rings;
+
+    suggested_offset=number_of_detector_per_ring;
+    gate_offset=static_cast<qint16> (number_of_detector_per_ring*0.75);
+}
 int rootGen::loadROOTfiles()
 {
     //bool ok;
@@ -637,8 +725,38 @@ int rootGen::loadROOTfiles()
 
 
 
+    if(Coincidences!=nullptr) std::cout<<"exists";
+    Coincidences->Add("file.root");
+
+    Coincidences->SetBranchStatus("*",0);
+    Coincidences->SetBranchAddress("comptonPhantom1",&comptonPhantom1);
+    Coincidences->SetBranchAddress("comptonPhantom2",&comptonPhantom2);
+    Coincidences->SetBranchAddress("sourceID1", &sourceID1);
+    Coincidences->SetBranchAddress("sourceID2", &sourceID2);
+    Coincidences->SetBranchAddress("eventID1",&eventID1);
+    Coincidences->SetBranchAddress("eventID2",&eventID2);
+    Coincidences->SetBranchAddress("energy1",&energy_1);
+    Coincidences->SetBranchAddress("energy2",&energy_2);
+    Coincidences->SetBranchAddress("submoduleID1",&submoduleID1);
+    Coincidences->SetBranchAddress("submoduleID2",&submoduleID2);
+    Coincidences->SetBranchAddress("crystalID1",&crystalID1);
+    Coincidences->SetBranchAddress("crystalID2",&crystalID2);
+    Coincidences->SetBranchAddress("moduleID1",&moduleID1);
+    Coincidences->SetBranchAddress("moduleID2",&moduleID2);
+    Coincidences->SetBranchAddress("rsectorID1",&rsectorID1);
+    Coincidences->SetBranchAddress("rsectorID2",&rsectorID2);
+    Coincidences->SetBranchAddress("globalPosX1",&globalPosX1);
+    Coincidences->SetBranchAddress("globalPosX2",&globalPosX2);
+    Coincidences->SetBranchAddress("sourcePosX1",&sourcePosX1);
+    Coincidences->SetBranchAddress("sourcePosY1",&sourcePosY1);
+    Coincidences->SetBranchAddress("sourcePosZ1",&sourcePosZ1);
+    Coincidences->SetBranchAddress("sourcePosX2",&sourcePosX2);
+    Coincidences->SetBranchAddress("sourcePosY2",&sourcePosY2);
+    Coincidences->SetBranchAddress("sourcePosZ2",&sourcePosZ2);
     //combineROOTFiles();
-    createROOTMichelogram();
+    nentries = (double)(Coincidences->GetEntries());
+    std::cout<<"nentries="<<nentries<<std::endl;
+    //createROOTMichelogram();
 
     //find_maximums();
     return 1;
@@ -648,13 +766,13 @@ int rootGen::loadROOTfiles()
 
 #ifdef debug
     void rootGen::debugWork(){
-    Coincidences.compton1=&compton1;
-    Coincidences.compton2=&compton2;
-    Coincidences.runID=&runID;
-    Coincidences.eventID1=&eventID1;
-    Coincidences.eventID2=&eventID2;
-    Coincidences.crystalID1=&crystalID1;
-    Coincidences.crystalID2=&crystalID2;
+    /*Coincidences->compton1=&compton1;
+    Coincidences->compton2=&compton2;
+    Coincidences->runID=&runID;
+    Coincidences->eventID1=&eventID1;
+    Coincidences->eventID2=&eventID2;
+    Coincidences->crystalID1=&crystalID1;
+    Coincidences->crystalID2=&crystalID2;
     Coincidences.submoduleID1=&submoduleID1;
     Coincidences.submoduleID2=&submoduleID2;
     Coincidences.moduleID1=&moduleID1;
@@ -677,7 +795,7 @@ int rootGen::loadROOTfiles()
     Coincidences.sourcePosX2=&sourcePosX2;
     Coincidences.sourcePosY2=&sourcePosY2;
     Coincidences.sourcePosZ2=&sourcePosZ2;
-    printf("linkOK\n");
+    printf("linkOK\n");*/
     }
 #endif
 

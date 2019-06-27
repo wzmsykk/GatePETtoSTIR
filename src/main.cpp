@@ -7,20 +7,33 @@ using namespace std;
 
 int main()
 {
-    rootGen myWork=rootGen();
+    rootGen* myWork=new rootGen();
+    myWork->load_test=false;
     cout << "Console ROOT to michealGram generator." << endl;
     fprintf(stdout,"Version %d.%d\n",
                deQT_VERSION_MAJOR,
                deQT_VERSION_MINOR);
+    cout<<"input .root filename should be file.root"<<endl;
     cout << "Started" << endl;
-    myWork.stirTemplateGen();
-    cout << "stirTemplateGenOK" << endl;
-    myWork.createEmptyMichelogram();
-    cout << "EmptyMichelogramGenerating" << endl;
-    myWork.createROOTMichelogram();
+    myWork->processMacData();
+    //myWork.stirTemplateGen();
+    //cout << "stirTemplateGenOK" << endl;
+    if(!myWork->load_test){
+
+    myWork->createEmptyMichelogram();
+
+    myWork->clearMichelogram();
+    cout << "EmptyMichelogramGenerated" << endl;
+    }
+    cout << "loadROOTfiles" << endl;
+    myWork->loadROOTfiles();
+
+    myWork->createROOTMichelogram();
     cout << "MichelogramGenerated" << endl;
-    myWork.saveMichelogram();
-    cout << "MichelogramSaved" << endl;
+    if(!myWork->load_test){
+    myWork->saveMichelogram();
+
+    cout << "MichelogramSaved" << endl;}
     std::cin.get();
     return 0;
 }

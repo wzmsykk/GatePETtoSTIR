@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <utype.h>
 #include <utchain.h>
+
 class rootGen
 {
 public:
@@ -15,25 +16,27 @@ public:
     int stirTemplateGen();
     int createEmptyMichelogram();
     void clearMichelogram();
+
     void createROOTMichelogram();
     void saveMichelogram();
     int loadROOTfiles();
+    void processMacData();
 #ifdef debug
     void debugWork();
 #endif
 
-    std::string rootFileName="1.root";
+    std::string rootFileName="file.root";
     std::string output_template_name="tst",originating_system="USERDEFINED",data_size="float",
     byte_order="LITTLEENDIAN",transaxial_sampling;
     //datasize:"short integer" "float" "integer"
 
     int16_t minimum_ring_difference=38,maximum_ring_difference=38;
-    //stir param
+    //mac param
     float average_depth_of_interaction=1.2f,view_offset_degrees=0.4f;
     int16_t arc_corrected_bins=312;
     float image_scaling_factor=1;
     int16_t data_offset=0,time_frames=1;
-    int16_t number_of_rings=39;
+    int16_t number_of_rings=100;
 
     int16_t number_of_detector_per_ring=624;
     int16_t number_of_bins=312;
@@ -64,17 +67,19 @@ public:
     //output settings
     bool save_as_projections=false;
 
-    //device param
+    //params for root event process
+    bool load_test=true;
     qint16 detectors_per_ring=624;
     qint16 tang_bins=312;
     qint16 max_ring_diff;
     std::string scanner_name="PET";
-    qint16 crystals_per_module_z=1,  crystals_per_module_xy=16;
+    qint16 crystals_per_module_z=1,  crystals_per_module_xy=25;
     qint16 modules_z=1, modules_xy=8;
     qint16 blocks_z=1, blocks_xy=16;
     qint16 crystals_z=1, crystals_xy=16;
     qint16 offset=0;
     qint16 gate_offset=0;
+
     float inner_diameter;
     std::string mac_filename="in.mac";
 
@@ -84,7 +89,7 @@ public:
     // ROOT tree declarations
     //Event Data
 
-    uTChain Coincidences=uTChain();
+    TChain *Coincidences;
 
     double nentries=1000;
 
@@ -105,7 +110,7 @@ public:
 
     //param used in michelogram generation
 
-    int low_energy_u=350,hi_energy_u=1000;
+    int low_energy_u=350,hi_energy_u=650;
     bool include_randoms=false;
     bool include_scattered=false;
 

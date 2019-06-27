@@ -2,6 +2,7 @@
 #define UTCHAIN_H
 #include <utype.h>
 #include <string>
+#include "TChain.h"
 class uTChain{
 public:
     uTChain();
