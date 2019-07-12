@@ -21,6 +21,7 @@ public:
     void saveMichelogram();
     int loadROOTfiles();
     void processMacData();
+    void showFirstaa();
 #ifdef debug
     void debugWork();
 #endif
@@ -32,8 +33,11 @@ public:
 
     int16_t minimum_ring_difference=38,maximum_ring_difference=38;
     //mac param
-    float average_depth_of_interaction=1.2f,view_offset_degrees=0.4f;
-    int16_t arc_corrected_bins=312;
+    bool has_block,has_module,has_rsector;
+    float inner_ring_param1=2.0;//=g_wild->crystal_array[6]
+    float inner_ring_param2,inner_ring_param3,inner_ring_param4,inner_ring_param5;//crystal_array[3],block_array[3],module_array.at(3),rsector_array.at(1)
+    float average_depth_of_interaction=0,view_offset_degrees=0;
+    int16_t arc_corrected_bins=0;
     float image_scaling_factor=1;
     int16_t data_offset=0,time_frames=1;
     int16_t number_of_rings=100;

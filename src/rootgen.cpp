@@ -6,6 +6,7 @@ rootGen::rootGen()
 }
 rootGen::~rootGen()
 {
+
     delete Coincidences;
 }
 int rootGen::stirTemplateGen()
@@ -154,8 +155,23 @@ int rootGen::stirTemplateGen()
 
         matrix_size = std::to_string(number_of_rings);
 
-
-
+        arc_corrected_bins=tang_bins;
+        inner_ring_diameter = -inner_ring_param1/2.0;
+            inner_ring_diameter = inner_ring_diameter + inner_ring_param2;
+            if (has_block)
+                inner_ring_diameter = inner_ring_diameter + inner_ring_param3;
+            if (has_module)
+                inner_ring_diameter = inner_ring_diameter + inner_ring_param4;
+            if (has_rsector)
+                inner_ring_diameter = inner_ring_diameter + inner_ring_param5;
+            inner_ring_diameter = inner_ring_diameter * 2.0;
+        blocks_per_bucket_in_tras=modules_xy;
+        blocks_per_bucket_in_axial=modules_z;
+        crystals_per_block_trans=crystals_xy;
+        crystals_per_block_axial=crystals_z;
+        crystals_per_singles_trans=crystals_xy;
+        crystals_per_singles_axial=crystals_z;
+        effective_cental_bin_size=inner_ring_diameter / number_of_bins;
 //writefiles
         std::ofstream out(output_header_name);
         out <<"!INTERFILE :="<<std::endl;
@@ -183,27 +199,27 @@ int rootGen::stirTemplateGen()
         out << "maximum ring difference per segment := "<<maximum_ring_array<<std::endl;
         out << "Scanner parameters:= "<<std::endl;
         out << "Scanner type := "<<originating_system<<std::endl;
-        out << "Number of rings                          := "<<std::to_string(number_of_rings)<<std::endl;
-        out << "Number of detectors per ring             := "<<std::to_string(number_of_detector_per_ring)<<std::endl;
-        out << "Inner ring diameter (cm)                 := "<<std::to_string(inner_ring_diameter)<<std::endl;
-        out << "Average depth of interaction (cm)        := "<<std::to_string(average_depth_of_interaction)<<std::endl; // Θα το πέρνει από το gate είτε από το πρότυπο??
-        out << "Distance between rings (cm)              := "<<std::to_string(distance_between_rings)<<std::endl;
-        out << "Default bin size (cm)                    := "<<std::to_string(distance_between_rings)<<std::endl;
-        out << "View offset (degrees)                    := "<<std::to_string(view_offset_degrees)<<std::endl;
-        out << "Maximum number of non-arc-corrected bins := "<<std::to_string(number_of_bins)<<std::endl;
+        out << "Number of rings                          := "<<number_of_rings<<std::endl;
+        out << "Number of detectors per ring             := "<<number_of_detector_per_ring<<std::endl;
+        out << "Inner ring diameter (cm)                 := "<<inner_ring_diameter<<std::endl;
+        out << "Average depth of interaction (cm)        := "<<average_depth_of_interaction<<std::endl; // Θα το πέρνει από το gate είτε από το πρότυπο??
+        out << "Distance between rings (cm)              := "<<distance_between_rings<<std::endl;
+        out << "Default bin size (cm)                    := "<<distance_between_rings<<std::endl;
+        out << "View offset (degrees)                    := "<<view_offset_degrees<<std::endl;
+        out << "Maximum number of non-arc-corrected bins := "<<number_of_bins<<std::endl;
         out << "Default number of arc-corrected bins     := "<<arc_corrected_bins<<std::endl;
-//        out << "Number of blocks per bucket in transaxial direction         := "<<std::to_string(blocks_per_bucket_in_tras)<<std::endl;
-        out << "Number of blocks per bucket in axial direction              := "<<std::to_string(blocks_per_bucket_in_axial)<<std::endl;
-        out << "Number of crystals per block in axial direction             := "<<std::to_string(crystals_per_block_axial)<<std::endl;
-        out << "Number of crystals per block in transaxial direction        := "<<std::to_string(crystals_per_block_trans)<<std::endl;
-        out << "Number of detector layers                                   := "<<std::to_string(detector_layers)<<std::endl;
-        out << "Number of crystals per singles unit in axial direction      := "<<std::to_string(crystals_per_singles_axial)<<std::endl;
-        out << "Number of crystals per singles unit in transaxial direction := "<<std::to_string(crystals_per_singles_trans)<<std::endl;
+        out << "Number of blocks per bucket in transaxial direction         := "<<blocks_per_bucket_in_tras<<std::endl;
+        out << "Number of blocks per bucket in axial direction              := "<<blocks_per_bucket_in_axial<<std::endl;
+        out << "Number of crystals per block in axial direction             := "<<crystals_per_block_axial<<std::endl;
+        out << "Number of crystals per block in transaxial direction        := "<<crystals_per_block_trans<<std::endl;
+        out << "Number of detector layers                                   := "<<detector_layers<<std::endl;
+        out << "Number of crystals per singles unit in axial direction      := "<<crystals_per_singles_axial<<std::endl;
+        out << "Number of crystals per singles unit in transaxial direction := "<<crystals_per_singles_trans<<std::endl;
         out << "end scanner parameters:="<<std::endl;
-        out << "effective central bin size (cm) := "<<std::to_string(effective_cental_bin_size)<<std::endl;
-        out << "image scaling factor[1] := "<<std::to_string(image_scaling_factor)<<std::endl;
-        out << "data offset in bytes[1] := "<<std::to_string(data_offset)<<std::endl;
-        out << "number of time frames := "<<std::to_string(time_frames)<<std::endl;
+        out << "effective central bin size (cm) := "<<effective_cental_bin_size<<std::endl;
+        out << "image scaling factor[1] := "<<image_scaling_factor<<std::endl;
+        out << "data offset in bytes[1] := "<<data_offset<<std::endl;
+        out << "number of time frames := "<<time_frames<<std::endl;
         out << "!END OF INTERFILE :="<<std::endl;
 
         out.close();
@@ -220,17 +236,19 @@ int rootGen::createEmptyMichelogram()
         m3=static_cast<int16_t>(((detectors_per_ring/2) + 1.5));
         m4=static_cast<int16_t>(tang_bins);
         int16_t mm=static_cast<int16_t>(selected_ring_difference);
-        std::cout<<"Martix params"<<std::endl<<"d1:"<<m1<<" d2:"<<m2<<" d3:"<<m3<<" d4:"<<m4<<std::endl;
+        //int16_t mm=m1;
+        std::cout<<"Martix params"<<std::endl<<"d1:"<<mm<<" d2:"<<mm<<" d3:"<<m3<<" d4:"<<m4<<std::endl;
         if(mm>m1) {std::cout <<"ERROR"; return 0;}
         std::cout<<"malloc process"<<std::endl;
         float process;
-        float_michelogram = static_cast<float****> ( malloc (static_cast<unsigned long>(m1) * sizeof(float***)));
+        float_michelogram = static_cast<float****> ( malloc (static_cast<unsigned long>(mm) * sizeof(float***)));
 
         for (int16_t counter_rings_1 = 0; counter_rings_1< mm; counter_rings_1++)
         {
             process=static_cast<float>(counter_rings_1)/mm;
-             std::cout<<"finished %"<<process*100<<std::endl;
-            float_michelogram[counter_rings_1] = static_cast<float***>( malloc ( static_cast<unsigned long>(m2) * sizeof(float**)));
+             std::cout<<'\r'<<"malloc finished %"<<process*100+1;
+             std::cout.flush();
+            float_michelogram[counter_rings_1] = static_cast<float***>( malloc ( static_cast<unsigned long>(mm) * sizeof(float**)));
 
             for (int16_t counter_rings_2 = 0; counter_rings_2< mm; counter_rings_2++)
             {
@@ -244,6 +262,7 @@ int rootGen::createEmptyMichelogram()
                 }
             }
         }
+        std::cout<<std::endl;
         std::cout<<"Martix gen OK"<<std::endl;
 
     }
@@ -305,7 +324,8 @@ void rootGen::clearMichelogram()
         for (qint16 i = 0; i< selected_ring_difference;i++)
         {
             process=static_cast<float>(i)/selected_ring_difference;
-            std::cout<<"cleared %"<<process*100<<std::endl;
+            std::cout<<'\r'<<"cleared %"<<process*100+1;
+            std::cout.flush();
             for(qint16 j=0; j< selected_ring_difference;j++)
             {
                 for(qint16 w=0; w< static_cast<qint16>((detectors_per_ring/2) + 1.5);w++)
@@ -317,6 +337,7 @@ void rootGen::clearMichelogram()
                 }
             }
         }
+        std::cout<<std::endl;
     }
     else if (data_size=="integer")
     {
@@ -537,7 +558,22 @@ void rootGen::createROOTMichelogram()
         average_depth_of_interaction -=  inner_diameter/static_cast<float>(2.0);
 
 }
+void rootGen::showFirstaa(){
+    FILE *fpa=fopen("myOutFile.csv","w");
+    FILE *fpb=fopen("myOutFile.dat","wb");
+    fwrite(float_michelogram,sizeof (float),(481*480),fpb);
+    for(int i=0;i<481;i++){
+        for(int j=0;j<480;j++)
+        {
+            fprintf(fpa,"%d ",static_cast<int>(float_michelogram[50][50][i][j]));
 
+            //std::cout<<float_michelogram[50][50][i][j]<<" ";
+        }
+        //std::cout<<std::endl;
+    }
+    fclose(fpa);
+    fclose(fpb);
+}
 
 void rootGen::saveMichelogram()
 {
@@ -659,7 +695,7 @@ void rootGen::saveMichelogram()
 
 }
 void rootGen::processMacData(){
-    std::string vis_open="OGLSX";
+
     float vis_viewer_set_viewpoint_Theta=60,vis_viewer_set_viewpoint_Phi=60;
     float gate_world_geo_xLength=400;//cm
     float gate_world_geo_yLength=400;//cm
@@ -690,10 +726,17 @@ void rootGen::processMacData(){
     int gate_block_array_z=20;
     int gate_ring_count=4;
     //user defined params
-    //number_of_detector_per_ring =crystal_array.at(1) * block_array.at(1) * module_array.at(1) * rsector_array.at(0);
+
+    has_block=false;
+    has_module=false;
+    has_rsector=true;
+    inner_ring_param1=2;//crystal_array.at(6)
+    inner_ring_param2=1;inner_ring_param3=1;inner_ring_param4=1;inner_ring_param5=31.55;
+    //crystal_array[3],block_array[3],module_array.at(3),rsector_array.at(1)
     number_of_detector_per_ring=960;
-    maximum_ring_difference=100;
-    minimum_ring_difference=1;
+    //number_of_detector_per_ring =crystal_array.at(1) * block_array.at(1) * module_array.at(1) * rsector_array.at(0);
+    maximum_ring_difference=number_of_rings-1;
+    minimum_ring_difference=0;
     blocks_xy=1;
     blocks_z=1;
     crystals_z=20;
@@ -703,6 +746,9 @@ void rootGen::processMacData(){
     number_of_rings=100;
     low_energy_u=450;
     hi_energy_u=650;
+    view_offset_degrees=0;
+    image_scaling_factor=0;
+    time_frames=0;
     //number_of_detector_per_ring=gate_crystal_array_x*gate_block_array_x;
 
     //number_of_detector_per_ring =setRepeatNumberY *1*1*setRepeatNumber
@@ -716,6 +762,14 @@ void rootGen::processMacData(){
 
     suggested_offset=number_of_detector_per_ring;
     gate_offset=static_cast<qint16> (number_of_detector_per_ring*0.75);
+
+
+    //modification
+    //int density_factor=2;
+    //selected_ring_difference=1;
+    //number_of_bins=number_of_detector_per_ring/2/density_factor;
+    //tang_bins=number_of_bins/density_factor;
+    //max_ring_diff=1;
 }
 int rootGen::loadROOTfiles()
 {

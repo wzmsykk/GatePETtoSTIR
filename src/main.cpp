@@ -16,8 +16,8 @@ int main()
     cout<<"input .root filename should be file.root"<<endl;
     cout << "Started" << endl;
     myWork->processMacData();
-    //myWork.stirTemplateGen();
-    //cout << "stirTemplateGenOK" << endl;
+    myWork->stirTemplateGen();
+    cout << "stirTemplateGenOK" << endl;
     if(!myWork->load_test){
 
     myWork->createEmptyMichelogram();
@@ -29,11 +29,13 @@ int main()
     myWork->loadROOTfiles();
 
     myWork->createROOTMichelogram();
+    myWork->showFirstaa();
     cout << "MichelogramGenerated" << endl;
     if(!myWork->load_test){
-    myWork->saveMichelogram();
-
+    //myWork->saveMichelogram();
+    cout << "press any key to exit";
     cout << "MichelogramSaved" << endl;}
+    delete myWork;
     std::cin.get();
     return 0;
 }
