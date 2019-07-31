@@ -172,6 +172,9 @@ int rootGen::stirTemplateGen()
         crystals_per_singles_trans=crystals_xy;
         crystals_per_singles_axial=crystals_z;
         effective_cental_bin_size=inner_ring_diameter / number_of_bins;
+        image_scaling_factor=1;
+        time_frames=1;
+        data_offset=0;
 //writefiles
         std::ofstream out(output_header_name);
         out <<"!INTERFILE :="<<std::endl;
@@ -232,8 +235,8 @@ int rootGen::createEmptyMichelogram()
     {
 
         int16_t m1,m2,m3,m4;
-        m1=m2=number_of_rings;
-        m3=static_cast<int16_t>(((detectors_per_ring/2) + 1.5));
+        m1=m2=selected_ring_difference;
+        m3=static_cast<int16_t>((detectors_per_ring/2));
         m4=static_cast<int16_t>(tang_bins);
         int16_t mm=static_cast<int16_t>(selected_ring_difference);
         //int16_t mm=m1;
@@ -328,7 +331,7 @@ void rootGen::clearMichelogram()
             std::cout.flush();
             for(qint16 j=0; j< selected_ring_difference;j++)
             {
-                for(qint16 w=0; w< static_cast<qint16>((detectors_per_ring/2) + 1.5);w++)
+                for(qint16 w=0; w< static_cast<qint16>((detectors_per_ring/2));w++)
                 {
                     for (qint16 l=0; l< tang_bins; l++)
                     {
@@ -560,16 +563,19 @@ void rootGen::createROOTMichelogram()
 }
 void rootGen::showFirstaa(){
     FILE *fpa=fopen("myOutFile.csv","w");
+    FILE *fpc=fopen("myOutFile50.csv","w");
     FILE *fpb=fopen("myOutFile.dat","wb");
-    fwrite(float_michelogram,sizeof (float),(481*480),fpb);
-    for(int i=0;i<481;i++){
+    fwrite(float_michelogram,sizeof (float),(480*480),fpb);
+    for (int k=0;k<100;k++){
+    for(int i=0;i<480;i++){
         for(int j=0;j<480;j++)
         {
-            fprintf(fpa,"%d ",static_cast<int>(float_michelogram[50][50][i][j]));
-
+            fprintf(fpa,"%d ",static_cast<int>(float_michelogram[k][k][i][j]));
+            if(k==50) fprintf(fpc,"%d ",static_cast<int>(float_michelogram[k][k][i][j]));
             //std::cout<<float_michelogram[50][50][i][j]<<" ";
         }
         //std::cout<<std::endl;
+    }
     }
     fclose(fpa);
     fclose(fpb);
@@ -577,8 +583,8 @@ void rootGen::showFirstaa(){
 
 void rootGen::saveMichelogram()
 {
-    qint16 segment_number = 0 ;
-    qint16 ring1=number_of_rings, ring2=number_of_rings;
+    long segment_number = 0 ;
+    long ring1=number_of_rings, ring2=number_of_rings;
     std::string output_data_name = output_template_name+".s";
     std::remove(output_data_name.c_str());
     FILE *output_michelogram_file=std::fopen(output_data_name.c_str(),"wb");
@@ -586,14 +592,14 @@ void rootGen::saveMichelogram()
     if(output_michelogram_file!=nullptr) std::cout<<"FileOpened"<<std::endl;
 
     //save_as_projections = ui->checkBox_4->isChecked();
-
+    save_as_projections=true;
 
     if (!save_as_projections)
     {
 
         if (data_size=="float")
         {
-            unsigned long size=selected_ring_difference*selected_ring_difference;
+            unsigned long size=maximum_ring_difference*maximum_ring_difference;
             size*=( detectors_per_ring/2);
             size*= tang_bins;
             size*=sizeof(float);
@@ -613,41 +619,46 @@ void rootGen::saveMichelogram()
     }
     else
     {
-        for (qint16 i = 0 ; i < 2*selected_ring_difference + 1 ; i++)
+        for (qint16 i = 0 ; i < 2*maximum_ring_difference + 1 ; i++)
         {
-            if (i <= selected_ring_difference)
-                segment_number =  number_of_rings - selected_ring_difference + i;
-            else
-                segment_number =  number_of_rings + selected_ring_difference - i;
 
+            if (i <= maximum_ring_difference)
+                segment_number =  number_of_rings - maximum_ring_difference + i;
+            else
+                segment_number =  number_of_rings + maximum_ring_difference - i;
+            std::cout<<"segment_num="<<segment_number<<"\t";
+            float *Proj;
+            if(segment_number==0) continue;
             for (qint16 j = 0 ; j <  detectors_per_ring/2 ; j++)
             {
+
                 if (data_size=="float")
                 {
-                    float **Proj=static_cast<float**>(malloc((sizeof (float)*abs(segment_number)*abs(tang_bins))));
+                    Proj=static_cast<float*>(malloc((sizeof (float)*segment_number*tang_bins)));
 
                     for (int k = 0 ; k < segment_number ; k++)
                     {
-                        if (i <= selected_ring_difference)
+                        if (i <= maximum_ring_difference)
                             ring1 = k;
                         else
                             ring2 = k;
 
-                        if (i <= selected_ring_difference)
-                            ring2 = ring1 + selected_ring_difference - i;
+                        if (i <= maximum_ring_difference)
+                            ring2 = ring1 + maximum_ring_difference - i;
                         else
-                            ring1 = ring2 - selected_ring_difference + i;
+                            ring1 = ring2 - maximum_ring_difference + i;
 
                         for (int l = 0 ; l <  tang_bins ; l++)
-                            Proj[k][l] = float_michelogram[ring2][ring1][j][l];
+                            Proj[k*segment_number+l] = float_michelogram[ring2][ring1][j][l];
                     }
                     fwrite(Proj,sizeof(float),(segment_number* tang_bins), output_michelogram_file);
+                    free(Proj);
                 }
 
                 else if (data_size=="integer")
                 {
 
-                    qint32 **Proj=static_cast<qint32**>(malloc((sizeof (qint32)*abs(segment_number)*abs(tang_bins))));
+                    qint32 *Proj=static_cast<qint32*>(malloc((sizeof (qint32)*abs(segment_number)*abs(tang_bins))));
                     for (int k = 0 ; k < segment_number ; k++)
                     {
                         if (i <= selected_ring_difference)
@@ -661,7 +672,7 @@ void rootGen::saveMichelogram()
                             ring1 = ring2 - selected_ring_difference + i;
 
                         for (int l = 0 ; l <  tang_bins ; l++)
-                            Proj[k][l] = float_michelogram[ring2][ring1][j][l];
+                            Proj[k*segment_number+l] = float_michelogram[ring2][ring1][j][l];
                     }
                     fwrite(Proj,sizeof(qint32),(segment_number* tang_bins), output_michelogram_file);
                 }

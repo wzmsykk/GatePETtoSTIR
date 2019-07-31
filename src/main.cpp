@@ -9,6 +9,7 @@ int main()
 {
     rootGen* myWork=new rootGen();
     myWork->load_test=false;
+
     cout << "Console ROOT to michealGram generator." << endl;
     fprintf(stdout,"Version %d.%d\n",
                deQT_VERSION_MAJOR,
@@ -16,7 +17,7 @@ int main()
     cout<<"input .root filename should be file.root"<<endl;
     cout << "Started" << endl;
     myWork->processMacData();
-    myWork->stirTemplateGen();
+
     cout << "stirTemplateGenOK" << endl;
     if(!myWork->load_test){
 
@@ -29,12 +30,15 @@ int main()
     myWork->loadROOTfiles();
 
     myWork->createROOTMichelogram();
+    myWork->stirTemplateGen();
     myWork->showFirstaa();
     cout << "MichelogramGenerated" << endl;
     if(!myWork->load_test){
-    //myWork->saveMichelogram();
+    myWork->saveMichelogram();
+    cout << "MichelogramSaved" << endl;
+
+    }
     cout << "press any key to exit";
-    cout << "MichelogramSaved" << endl;}
     delete myWork;
     std::cin.get();
     return 0;
