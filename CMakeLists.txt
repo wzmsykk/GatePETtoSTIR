@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 project (deQT)
 # The version number.
 set (${PROJECT_NAME}_VERSION_MAJOR 0)
-set (${PROJECT_NAME}_VERSION_MINOR 3)
+set (${PROJECT_NAME}_VERSION_MINOR 4)
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)

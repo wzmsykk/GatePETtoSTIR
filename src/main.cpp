@@ -18,7 +18,7 @@ int main()
     cout << "Started" << endl;
     myWork->processMacData();
 
-    cout << "stirTemplateGenOK" << endl;
+
     if(!myWork->load_test){
 
     myWork->createEmptyMichelogram();
@@ -31,11 +31,13 @@ int main()
 
     myWork->createROOTMichelogram();
     myWork->stirTemplateGen();
+    cout << "stirTemplateGenOK" << endl;
     myWork->showFirstaa();
     cout << "MichelogramGenerated" << endl;
     if(!myWork->load_test){
-    myWork->saveMichelogram();
-    cout << "MichelogramSaved" << endl;
+
+        myWork->saveMichelogram();
+        cout << "MichelogramSaved" << endl;
 
     }
     cout << "press any key to exit";

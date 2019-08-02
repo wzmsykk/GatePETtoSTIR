@@ -205,7 +205,8 @@ int rootGen::stirTemplateGen()
         out << "Number of rings                          := "<<number_of_rings<<std::endl;
         out << "Number of detectors per ring             := "<<number_of_detector_per_ring<<std::endl;
         out << "Inner ring diameter (cm)                 := "<<inner_ring_diameter<<std::endl;
-        out << "Average depth of interaction (cm)        := "<<average_depth_of_interaction<<std::endl; // Θα το πέρνει από το gate είτε από το πρότυπο??
+        //out << "Average depth of interaction (cm)        := "<<average_depth_of_interaction<<std::endl; // Θα το πέρνει από το gate είτε από το πρότυπο??
+        out << "Average depth of interaction (cm)        := "<<"0"<<std::endl;
         out << "Distance between rings (cm)              := "<<distance_between_rings<<std::endl;
         out << "Default bin size (cm)                    := "<<distance_between_rings<<std::endl;
         out << "View offset (degrees)                    := "<<view_offset_degrees<<std::endl;
@@ -235,84 +236,33 @@ int rootGen::createEmptyMichelogram()
     {
 
         int16_t m1,m2,m3,m4;
-        m1=m2=selected_ring_difference;
-        m3=static_cast<int16_t>((detectors_per_ring/2));
+        m1=m2=number_of_rings;
+        m3=static_cast<int16_t>((detectors_per_ring/2)+1.5);
         m4=static_cast<int16_t>(tang_bins);
         int16_t mm=static_cast<int16_t>(selected_ring_difference);
-        //int16_t mm=m1;
         std::cout<<"Martix params"<<std::endl<<"d1:"<<mm<<" d2:"<<mm<<" d3:"<<m3<<" d4:"<<m4<<std::endl;
         if(mm>m1) {std::cout <<"ERROR"; return 0;}
         std::cout<<"malloc process"<<std::endl;
         float process;
-        float_michelogram = static_cast<float****> ( malloc (static_cast<unsigned long>(mm) * sizeof(float***)));
-
+        float_michelogram = static_cast<float****> ( malloc (static_cast<unsigned long>(m1) * sizeof(float***)));
         for (int16_t counter_rings_1 = 0; counter_rings_1< mm; counter_rings_1++)
         {
             process=static_cast<float>(counter_rings_1)/mm;
              std::cout<<'\r'<<"malloc finished %"<<process*100+1;
              std::cout.flush();
-            float_michelogram[counter_rings_1] = static_cast<float***>( malloc ( static_cast<unsigned long>(mm) * sizeof(float**)));
-
+            float_michelogram[counter_rings_1] = static_cast<float***>( malloc ( static_cast<unsigned long>(m2) * sizeof(float**)));
             for (int16_t counter_rings_2 = 0; counter_rings_2< mm; counter_rings_2++)
             {
-
                 float_michelogram[counter_rings_1][counter_rings_2] = static_cast<float**>( malloc (static_cast<unsigned long>(m3) * sizeof(float*)));
-
                 for (int16_t counter_dets = 0; counter_dets < m3; counter_dets++)
                 {
-                    //std::cout<<counter_dets<<std::endl;
                     float_michelogram[counter_rings_1][counter_rings_2][counter_dets] =static_cast<float*>(malloc (static_cast<unsigned long>(m4) * sizeof(float)));
                 }
             }
         }
         std::cout<<std::endl;
         std::cout<<"Martix gen OK"<<std::endl;
-
     }
-
-    else if (data_size=="integer")
-    {
-        int_michelogram = static_cast<int32_t****>(  malloc ( static_cast<float>(number_of_rings) * sizeof(int32_t***)));
-
-        for (int16_t counter_rings_1 = 0; counter_rings_1< selected_ring_difference; counter_rings_1++)
-        {
-            int_michelogram[counter_rings_1] = static_cast<int32_t***>( malloc ( static_cast<float>(number_of_rings) * sizeof(int32_t**)));
-
-            for (int16_t counter_rings_2 = 0; counter_rings_2< selected_ring_difference; counter_rings_2++)
-            {
-                int_michelogram[counter_rings_1][counter_rings_2] = static_cast<int32_t**>( malloc (static_cast<float>(static_cast<int16_t>((detectors_per_ring/2) + 1.5)) * sizeof(int32_t*)));
-
-                for (int16_t counter_dets = 0; counter_dets < static_cast<int16_t>((detectors_per_ring/2) + 1.5); counter_dets++)
-                {
-                    int_michelogram[counter_rings_1][counter_rings_2][counter_dets] =static_cast<int32_t*>( malloc (static_cast<float>(tang_bins) * sizeof(int32_t)));
-                }
-            }
-        }
-
-
-    }
-
-    else if (data_size=="short integer")
-    {
-        short_michelogram = static_cast<int16_t****>(  malloc ( static_cast<float>(number_of_rings) * sizeof(int16_t***)));
-
-        for (int16_t counter_rings_1 = 0; counter_rings_1< selected_ring_difference; counter_rings_1++)
-        {
-            short_michelogram[counter_rings_1] = static_cast<int16_t***>( malloc ( static_cast<float>(number_of_rings) * sizeof(int16_t**)));
-
-            for (int16_t counter_rings_2 = 0; counter_rings_2< selected_ring_difference; counter_rings_2++)
-            {
-                short_michelogram[counter_rings_1][counter_rings_2] = static_cast<int16_t**>( malloc (static_cast<float>(static_cast<int16_t>((detectors_per_ring/2) + 1.5)) * sizeof(int16_t*)));
-
-                for (int16_t counter_dets = 0; counter_dets < static_cast<int16_t>((detectors_per_ring/2) + 1.5); counter_dets++)
-                {
-                    short_michelogram[counter_rings_1][counter_rings_2][counter_dets] =static_cast<int16_t*>( malloc (static_cast<float>(tang_bins) * sizeof(int16_t)));
-                }
-            }
-        }
-
-    }
-
     return 1;
 }
 
@@ -331,7 +281,7 @@ void rootGen::clearMichelogram()
             std::cout.flush();
             for(qint16 j=0; j< selected_ring_difference;j++)
             {
-                for(qint16 w=0; w< static_cast<qint16>((detectors_per_ring/2));w++)
+                for(qint16 w=0; w< static_cast<qint16>((detectors_per_ring/2)+1.5);w++)
                 {
                     for (qint16 l=0; l< tang_bins; l++)
                     {
@@ -341,40 +291,6 @@ void rootGen::clearMichelogram()
             }
         }
         std::cout<<std::endl;
-    }
-    else if (data_size=="integer")
-    {
-        for (qint16 i = 0; i< selected_ring_difference;i++)
-        {
-            for(qint16 j=0; j< selected_ring_difference;j++)
-            {
-                for(qint16 w=0; w< static_cast<qint16>((detectors_per_ring/2) + 1.5);w++)
-                {
-                    for (qint16 l=0; l<tang_bins; l++)
-                    {
-                        int_michelogram[i][j][w][l]=0;
-                    }
-                }
-            }
-        }
-
-    }
-    else if (data_size=="short integer")
-    {
-
-        for (qint16 i = 0; i< selected_ring_difference;i++)
-        {
-            for(qint16 j=0; j< selected_ring_difference;j++)
-            {
-                for(qint16 w=0; w< static_cast<qint16>((detectors_per_ring/2) + 1.5);w++)
-                {
-                    for (qint16 l=0; l<tang_bins; l++)
-                    {
-                        short_michelogram[i][j][w][l]=0;
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -561,23 +477,27 @@ void rootGen::createROOTMichelogram()
         average_depth_of_interaction -=  inner_diameter/static_cast<float>(2.0);
 
 }
-void rootGen::showFirstaa(){
-    FILE *fpa=fopen("myOutFile.csv","w");
-    FILE *fpc=fopen("myOutFile50.csv","w");
-    FILE *fpb=fopen("myOutFile.dat","wb");
-    fwrite(float_michelogram,sizeof (float),(480*480),fpb);
+int rootGen::showFirstaa(){
+    FILE *fpa;
+    FILE *fpb=fopen("myOutFile50.dat","wb");
+    std::string fileName="";
     for (int k=0;k<100;k++){
-    for(int i=0;i<480;i++){
+        fileName="./output/sinogram_"+std::to_string(k)+".csv";
+        fpa=fopen(fileName.c_str(),"w");
+    for(int i=0;i<481;i++){
         for(int j=0;j<480;j++)
         {
             fprintf(fpa,"%d ",static_cast<int>(float_michelogram[k][k][i][j]));
-            if(k==50) fprintf(fpc,"%d ",static_cast<int>(float_michelogram[k][k][i][j]));
             //std::cout<<float_michelogram[50][50][i][j]<<" ";
+            if(k==50){
+                fwrite(&float_michelogram[50][50][i][j],sizeof (float),1,fpb);
+            }
         }
         //std::cout<<std::endl;
     }
+    //fclose(fpa);
     }
-    fclose(fpa);
+
     fclose(fpb);
 }
 
@@ -590,8 +510,6 @@ void rootGen::saveMichelogram()
     FILE *output_michelogram_file=std::fopen(output_data_name.c_str(),"wb");
 
     if(output_michelogram_file!=nullptr) std::cout<<"FileOpened"<<std::endl;
-
-    //save_as_projections = ui->checkBox_4->isChecked();
     save_as_projections=true;
 
     if (!save_as_projections)
@@ -599,36 +517,25 @@ void rootGen::saveMichelogram()
 
         if (data_size=="float")
         {
-            unsigned long size=maximum_ring_difference*maximum_ring_difference;
-            size*=( detectors_per_ring/2);
+            unsigned long size=selected_ring_difference*selected_ring_difference;
+            size*=(int)(detectors_per_ring/2);
             size*= tang_bins;
             size*=sizeof(float);
-            fwrite(float_michelogram,sizeof(float),(size), output_michelogram_file);
+            fwrite(float_michelogram,sizeof(float),(size)/sizeof(float), output_michelogram_file);
             std::cout<<"fwriteOK,Length="<<size<<std::endl;
-        }
-
-        else if (data_size=="integer")
-        {
-            fwrite(int_michelogram,sizeof(int),(selected_ring_difference*selected_ring_difference*( detectors_per_ring/2)* tang_bins), output_michelogram_file);
-        }
-
-        else if (data_size=="short integer")
-        {
-            fwrite(short_michelogram,sizeof(short),(selected_ring_difference*selected_ring_difference*( detectors_per_ring/2)* tang_bins), output_michelogram_file);
-        }
+        } 
     }
     else
     {
-        for (qint16 i = 0 ; i < 2*maximum_ring_difference + 1 ; i++)
+        for (qint16 i = 0 ; i < 2*selected_ring_difference + 1 ; i++)
         {
 
-            if (i <= maximum_ring_difference)
-                segment_number =  number_of_rings - maximum_ring_difference + i;
+            if (i <= selected_ring_difference)
+                segment_number =  number_of_rings - selected_ring_difference + i;
             else
-                segment_number =  number_of_rings + maximum_ring_difference - i;
+                segment_number =  number_of_rings + selected_ring_difference - i;
             std::cout<<"segment_num="<<segment_number<<"\t";
             float *Proj;
-            if(segment_number==0) continue;
             for (qint16 j = 0 ; j <  detectors_per_ring/2 ; j++)
             {
 
@@ -638,66 +545,24 @@ void rootGen::saveMichelogram()
 
                     for (int k = 0 ; k < segment_number ; k++)
                     {
-                        if (i <= maximum_ring_difference)
+                        if (i <= selected_ring_difference)
                             ring1 = k;
                         else
                             ring2 = k;
 
-                        if (i <= maximum_ring_difference)
-                            ring2 = ring1 + maximum_ring_difference - i;
+                        if (i <= selected_ring_difference)
+                            ring2 = ring1 + selected_ring_difference - i;
                         else
-                            ring1 = ring2 - maximum_ring_difference + i;
+                            ring1 = ring2 - selected_ring_difference + i;
 
                         for (int l = 0 ; l <  tang_bins ; l++)
-                            Proj[k*segment_number+l] = float_michelogram[ring2][ring1][j][l];
+                            Proj[k*tang_bins+l] = float_michelogram[ring2][ring1][j][l];
                     }
+
                     fwrite(Proj,sizeof(float),(segment_number* tang_bins), output_michelogram_file);
                     free(Proj);
                 }
 
-                else if (data_size=="integer")
-                {
-
-                    qint32 *Proj=static_cast<qint32*>(malloc((sizeof (qint32)*abs(segment_number)*abs(tang_bins))));
-                    for (int k = 0 ; k < segment_number ; k++)
-                    {
-                        if (i <= selected_ring_difference)
-                            ring1 = k;
-                        else
-                            ring2 = k;
-
-                        if (i <= selected_ring_difference)
-                            ring2 = ring1 + selected_ring_difference - i;
-                        else
-                            ring1 = ring2 - selected_ring_difference + i;
-
-                        for (int l = 0 ; l <  tang_bins ; l++)
-                            Proj[k*segment_number+l] = float_michelogram[ring2][ring1][j][l];
-                    }
-                    fwrite(Proj,sizeof(qint32),(segment_number* tang_bins), output_michelogram_file);
-                }
-
-                else if (data_size=="short integer")
-                {
-                    qint16 **Proj=static_cast<qint16**>(malloc((sizeof (qint16)*abs(segment_number)*abs(tang_bins))));
-
-                    for (int k = 0 ; k < segment_number ; k++)
-                    {
-                        if (i <= selected_ring_difference)
-                            ring1 = k;
-                        else
-                            ring2 = k;
-
-                        if (i <= selected_ring_difference)
-                            ring2 = ring1 + selected_ring_difference - i;
-                        else
-                            ring1 = ring2 - selected_ring_difference + i;
-
-                        for (int l = 0 ; l <  tang_bins ; l++)
-                            Proj[k][l] = float_michelogram[ring2][ring1][j][l];
-                    }
-                    fwrite(Proj,sizeof(qint16),(segment_number* tang_bins), output_michelogram_file);
-                }
             }
         }
     }
@@ -707,35 +572,6 @@ void rootGen::saveMichelogram()
 }
 void rootGen::processMacData(){
 
-    float vis_viewer_set_viewpoint_Theta=60,vis_viewer_set_viewpoint_Phi=60;
-    float gate_world_geo_xLength=400;//cm
-    float gate_world_geo_yLength=400;//cm
-    float gate_world_geo_zLength=400;//cm
-    float gate_PET_geo_Rmax=52;//cm
-    float gate_PET_geo_Rmin=39.9f;//cm
-    float gate_PET_geo_Height=40.2f;//cm
-    float gate_head_geo_xLength=8;//cm
-    float gate_head_geo_yLength=32;//cm
-    float gate_head_geo_zLength=40;//cm
-    float gate_block_geo_xLength=30;//mm
-    float gate_block_geo_yLength=16;//mm
-    float gate_block_geo_zLength=20;//mm
-    float gate_crystal_geo_xLength=30;//mm
-    float gate_crystal_geo_yLength=3;//mm
-    float gate_crystal_geo_zLength=3.8f;//mm
-    float gate_LSO_geo_xLength=15;//mm
-    float gate_LSO_geo_yLength=3;//mm
-    float gate_LSO_geo_zLength=3.8f;//mm
-    float gate_BGO_geo_xLength=15;//mm
-    float gate_BGO_geo_yLength=3;//mm
-    float gate_BGO_geo_zLength=3.8f;//mm
-    int gate_crystal_array_x=1;
-    int gate_crystal_array_y=5;
-    int gate_crystal_array_z=5;
-    int gate_block_array_x=1;
-    int gate_block_array_y=20;
-    int gate_block_array_z=20;
-    int gate_ring_count=4;
     //user defined params
 
     has_block=false;
@@ -769,7 +605,6 @@ void rootGen::processMacData(){
     tang_bins=number_of_bins;
 
     selected_ring_difference=maximum_ring_difference - minimum_ring_difference +1 ;
-    max_ring_diff =number_of_rings;
 
     suggested_offset=number_of_detector_per_ring;
     gate_offset=static_cast<qint16> (number_of_detector_per_ring*0.75);

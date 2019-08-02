@@ -21,17 +21,17 @@ public:
     void saveMichelogram();
     int loadROOTfiles();
     void processMacData();
-    void showFirstaa();
+    int showFirstaa();
 #ifdef debug
     void debugWork();
 #endif
 
     std::string rootFileName="file.root";
-    std::string output_template_name="tst",originating_system="USERDEFINED",data_size="float",
+    std::string output_template_name="tst",originating_system="PET",data_size="float",
     byte_order="LITTLEENDIAN",transaxial_sampling;
     //datasize:"short integer" "float" "integer"
 
-    int16_t minimum_ring_difference=38,maximum_ring_difference=38;
+    int16_t minimum_ring_difference=0,maximum_ring_difference=99;
     //mac param
     bool has_block,has_module,has_rsector;
     float inner_ring_param1=2.0;//=g_wild->crystal_array[6]
@@ -67,15 +67,14 @@ public:
     qint32 **** int_michelogram;
     qint16 **** short_michelogram;
 
-    qint16 selected_ring_difference=1;
+    qint16 selected_ring_difference=100;
     //output settings
     bool save_as_projections=false;
 
     //params for root event process
-    bool load_test=true;
-    qint16 detectors_per_ring=624;
-    qint16 tang_bins=312;
-    qint16 max_ring_diff;
+    bool load_test=false;
+    qint16 detectors_per_ring=960;
+    qint16 tang_bins=480;
     std::string scanner_name="PET";
     qint16 crystals_per_module_z=1,  crystals_per_module_xy=25;
     qint16 modules_z=1, modules_xy=8;
